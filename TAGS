@@ -1,0 +1,66 @@
+
+cmd.c,53
+cmd_send(25,910
+cmd_recv(48,1341
+cmd_name(87,1995
+
+hiroctl.c,523
+#define dead_attr 31,1007
+void		 cmd_restart_usage(34,1088
+typedef int(*cmdmainfn)cmdmainfn45,1334
+struct cmddef 47,1373
+	const char	*cmd;cmd48,1389
+	cmdmainfn	 fn;49,1407
+} cmds[cmds50,1423
+const char *sockpath;sockpath58,1552
+int fd;59,1574
+char *me;me62,1637
+usage(65,1660
+io_copy(72,1769
+cmd_restart(85,1931
+cmd_restart_usage(92,2019
+cmd_put(99,2105
+cmd_put_usage(106,2183
+cmd_get(113,2261
+cmd_get_usage(120,2339
+cmd_ping(127,2417
+cmd_ping_usage(146,2660
+open_ctl_sock(153,2755
+main(172,3117
+
+hirod.c,410
+typedef void (*cmd_handlefn)cmd_handlefn37,1122
+struct cmd_handlers 44,1361
+	enum cmd_type	type;45,1383
+	cmd_handlefn	fn;46,1404
+} handlers[handlers47,1422
+handle_cmd_restart(56,1602
+handle_cmd_put(62,1707
+handle_cmd_get(68,1804
+handle_cmd_ping(74,1901
+usage(80,1983
+make_socket(87,2088
+make_ctl_socket(142,3200
+handle_cmd(165,3621
+handle_ctl_conn(191,4046
+handle_conn(205,4299
+main(212,4402
+
+log.c,135
+int verbose,27,940
+int verbose, log_to_syslog;27,940
+should_log(30,987
+do_log(48,1248
+#define DEFLOGFN(70,1685
+log_fatal(93,2062
+
+util.c,225
+default_socket_path(25,897
+#define	INVALID	41,1122
+#define	TOOSMALL	42,1141
+#define	TOOLARGE	43,1160
+strtonum(46,1197
+	struct errval 52,1336
+		const char *errstr;errstr53,1353
+		int err;54,1375
+parse_portno(88,1990
