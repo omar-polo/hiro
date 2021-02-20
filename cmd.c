@@ -22,7 +22,7 @@
 
 /* todo: add checks for write errors */
 int
-cmd_send(int fd, struct cmd *cmd)
+send_cmd(int fd, struct cmd *cmd)
 {
 	size_t len;
 	int i;
@@ -45,7 +45,7 @@ cmd_send(int fd, struct cmd *cmd)
 
 /* todo: add checks for read errors */
 int
-cmd_recv(int fd, struct cmd *cmd)
+recv_cmd(int fd, struct cmd *cmd)
 {
 	size_t len;
 	int i;
@@ -53,7 +53,9 @@ cmd_recv(int fd, struct cmd *cmd)
 
 	cmd->argv = NULL;
 
-	read(fd, &cmd->type, sizeof(cmd->type));
+	if (read(fd, &cmd->type, sizeof(cmd->type)) <= 0)
+		return -1;
+
 	read(fd, &cmd->argc, sizeof(cmd->argc));
 
 	if (cmd->argc == 0)
@@ -89,10 +91,10 @@ cmd_name(enum cmd_type type)
 	switch (type) {
 	case CMD_RESTART:
 		return "restart";
-	case CMD_PUT:
-		return "put";
-	case CMD_GET:
-		return "get";
+	case CMD_SEND:
+		return "send";
+	case CMD_RECV:
+		return "recv";
 	case CMD_PING:
 		return "ping";
 	default:

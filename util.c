@@ -18,8 +18,9 @@
 
 #include <err.h>
 #include <limits.h>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 const char *
 default_socket_path(void)
@@ -94,4 +95,41 @@ parse_portno(const char *p)
 	if (errstr != NULL)
 		err(1, "port number is %s: %s", errstr, p);
 	return n;
+}
+
+struct shstr *
+make_shstr(const char *s)
+{
+	struct shstr *ss;
+	char *dup;
+
+	if ((dup = strdup(s)) == NULL)
+		return NULL;
+
+	if ((ss = calloc(1, sizeof(*ss))) == NULL) {
+		free(dup);
+		return NULL;
+	}
+
+	ss->str = dup;
+	return ss;
+}
+
+struct shstr *
+shstr_inc(struct shstr *s)
+{
+	s->rc++;
+	return s;
+}
+
+void
+free_shstr(struct shstr *s)
+{
+	if (s->rc != 0) {
+		s->rc--;
+		return;
+	}
+
+	free(s->str);
+	free(s);
 }

@@ -17,7 +17,19 @@
 #ifndef HIRO_UTIL_H
 #define HIRO_UTIL_H
 
+#include <stddef.h>
+
+/* string with a reference counter */
+struct shstr {
+	char	*str;
+	size_t	 rc;
+};
+
 const char	*default_socket_path(void);
 int		 parse_portno(const char*);
+
+struct shstr	*make_shstr(const char*);
+struct shstr	*shstr_inc(struct shstr*);
+void		 free_shstr(struct shstr*);
 
 #endif

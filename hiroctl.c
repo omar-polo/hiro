@@ -33,11 +33,11 @@
 int		 cmd_restart(int, char**);
 void		 cmd_restart_usage(void) dead_attr;
 
-int		 cmd_put(int, char**);
-void		 cmd_put_usage(void) dead_attr;
+int		 cmd_send(int, char**);
+void		 cmd_send_usage(void) dead_attr;
 
-int		 cmd_get(int, char**);
-void		 cmd_get_usage(void) dead_attr;
+int		 cmd_recv(int, char**);
+void		 cmd_recv_usage(void) dead_attr;
 
 int		 cmd_ping(int, char**);
 void		 cmd_ping_usage(void) dead_attr;
@@ -49,8 +49,8 @@ struct cmddef {
 	cmdmainfn	 fn;
 } cmds[] = {
 	{ "restart",	cmd_restart },
-	{ "put",	cmd_put },
-	{ "get",	cmd_get },
+	{ "send",	cmd_send },
+	{ "recv",	cmd_recv },
 	{ "ping",	cmd_ping },
 	{ NULL,		NULL },
 };
@@ -91,35 +91,75 @@ cmd_restart(int argc, char **argv)
 void dead_attr
 cmd_restart_usage(void)
 {
-	fprintf(stderr, "USAGE: %s restart", me);
+	fprintf(stderr, "USAGE: %s restart\n", me);
 	exit(1);
 }
 
 int
-cmd_put(int argc, char **argv)
+cmd_send(int argc, char **argv)
 {
-	printf("PUT");
+	struct cmd cmd = {
+		.type = CMD_SEND,
+	};
+
+	if (getopt(argc, argv, "") != -1)
+		cmd_send_usage();
+
+	/* argc -= optind; */
+	/* argv += optind; */
+
+	if (argc != 2)
+		cmd_send_usage();
+
+	cmd.argc = argc;
+	cmd.argv = argv;
+
+	if (send_cmd(fd, &cmd) == -1)
+		err(1, "cmd_send");
+
+	io_copy(fd, 1);
+
 	return 0;
 }
 
 void dead_attr
-cmd_put_usage(void)
+cmd_send_usage(void)
 {
-	fprintf(stderr, "USAGE: %s put", me);
+	fprintf(stderr, "USAGE: %s send <to> <what>\n", me);
 	exit(1);
 }
 
 int
-cmd_get(int argc, char **argv)
+cmd_recv(int argc, char **argv)
 {
-	printf("GET");
+	struct cmd cmd = {
+		.type = CMD_RECV,
+	};
+
+	optind = 0;
+
+	if (getopt(argc, argv, "") != -1)
+		cmd_recv_usage();
+	argc -= optind;
+	argv += optind;
+
+	/* XXX: investigate this.  Basically optind is at least 1, so
+	 * we go under 0... */
+	if (argc >= 0)
+		cmd_recv_usage();
+
+	if (send_cmd(fd, &cmd) == -1)
+		err(1, "cmd_send");
+
+	io_copy(fd, 1);
+
 	return 0;
 }
 
 void dead_attr
-cmd_get_usage(void)
+cmd_recv_usage(void)
 {
-	fprintf(stderr, "USAGE: %s get", me);
+	fprintf(stderr, "USAGE: %s recv\n", me);
 	exit(1);
 }
 
@@ -133,10 +173,9 @@ cmd_ping(int argc, char **argv)
 	if (argc != 0)
 		cmd_ping_usage();
 
-	if (cmd_send(fd, &cmd) == -1)
-		err(1, "cmd_send");
+	if (send_cmd(fd, &cmd) == -1)
+		err(1, "send_cmd");
 
-	// printf("cmd sent\n");
 	io_copy(fd, 1);
 
 	return 0;
@@ -193,9 +232,6 @@ main(int argc, char **argv)
 	if (sockpath == NULL)
 		sockpath = default_socket_path();
 
-	if ((fd = open_ctl_sock(sockpath)) == -1)
-		err(1, "open_ctl_sock: %s", sockpath);
-
 	if (argc == 0) {
 		usage(me);
 		return 1;
@@ -209,6 +245,9 @@ main(int argc, char **argv)
 	ret = 1;
 	for (cmd = cmds; cmd->cmd != NULL; ++cmd) {
 		if (!strcmp(sub, cmd->cmd)) {
+			if ((fd = open_ctl_sock(sockpath)) == -1)
+				err(1, "open_ctl_sock: %s", sockpath);
+
 			ret = cmd->fn(argc, argv);
 			goto end;
 		}

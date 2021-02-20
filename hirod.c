@@ -34,11 +34,13 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <compat/queue.h>
+
 typedef void (*cmd_handlefn)(int, struct cmd*);
 
 static void	handle_cmd_restart(int, struct cmd*);
-static void	handle_cmd_put(int, struct cmd*);
-static void	handle_cmd_get(int, struct cmd*);
+static void	handle_cmd_send(int, struct cmd*);
+static void	handle_cmd_recv(int, struct cmd*);
 static void	handle_cmd_ping(int, struct cmd*);
 
 struct cmd_handlers {
@@ -46,34 +48,112 @@ struct cmd_handlers {
 	cmd_handlefn	fn;
 } handlers[] = {
 	{ CMD_RESTART,	handle_cmd_restart },
- 	{ CMD_PUT,	handle_cmd_put },
-	{ CMD_GET,	handle_cmd_get },
+ 	{ CMD_SEND,	handle_cmd_send },
+	{ CMD_RECV,	handle_cmd_recv },
 	{ CMD_PING,	handle_cmd_ping },
 	{ -1,		NULL },
 };
+
+LIST_HEAD(clientshead, client) clients;
+struct client {
+	int			 fd;
+	int			 busy;
+	size_t			 off;
+	size_t			 len;
+	struct shstr		*buf;
+	/* todo: enqueue msgs? */
+	struct event		 ev;
+	LIST_ENTRY(client)	 clients;
+};
+
+static void
+handle_client_write(int fd, short ev, void *d)
+{
+	struct client *c = d;
+	ssize_t r;
+
+	if ((r = write(fd, c->buf->str + c->off, c->len - c->off)) == -1) {
+		log_debug("failed write for a client, deleting it");
+		LIST_REMOVE(c, clients);
+		free_shstr(c->buf);
+		close(c->fd);
+		event_del(&c->ev);
+		free(c);
+		return;
+	}
+
+	c->off += r;
+
+	if (c->off == c->len) {
+		c->busy = 0;
+		free_shstr(c->buf);
+		event_del(&c->ev);
+	}
+}
 
 static void
 handle_cmd_restart(int fd, struct cmd *cmd)
 {
 	warnx("unimplemented handle_cmd_restart");
+	close(fd);
 }
 
 static void
-handle_cmd_put(int fd, struct cmd *cmd)
+handle_cmd_send(int fd, struct cmd *cmd)
 {
-	warnx("unimplemented handle_cmd_put");
+	struct client *c;
+	struct shstr *s;
+
+	if (cmd->argc != 2) {
+		log_warn("SEND command with improper arg number (%d)",
+		    cmd->argc);
+		goto end;
+	}
+
+	if ((s = make_shstr(cmd->argv[1])) == NULL) {
+		log_warn("failed allocation of struct shstr");
+		goto end;
+	}
+
+	log_warn("TODO: send %s to %s",
+	    cmd->argv[1], cmd->argv[0]);
+
+	LIST_FOREACH(c, &clients, clients) {
+		/* XXX: enqueue? */
+		if (c->busy)
+			continue;
+
+		c->len = strlen(s->str);
+		c->off = 0;
+		c->buf = shstr_inc(s);
+		event_set(&c->ev, c->fd, EV_WRITE | EV_PERSIST, handle_client_write, c);
+		event_add(&c->ev, NULL);
+	}
+
+end:
+	close(fd);
 }
 
 static void
-handle_cmd_get(int fd, struct cmd *cmd)
+handle_cmd_recv(int fd, struct cmd *cmd)
 {
-	warnx("unimplemented handle_cmd_get");
+	struct client *c;
+
+	if ((c = calloc(1, sizeof(*c))) == NULL) {
+		log_warn("handle_cmd_recv: failed calloc");
+		close(fd);
+		return;
+	}
+
+	c->fd = fd;
+	LIST_INSERT_HEAD(&clients, c, clients);
 }
 
 static void
 handle_cmd_ping(int fd, struct cmd *cmd)
 {
 	dprintf(fd, "PONG\n");
+	close(fd);
 }
 
 static void
@@ -167,8 +247,10 @@ handle_cmd(int fd, short events, void *d)
 	struct cmd cmd;
 	struct cmd_handlers *hs;
 
-	if (cmd_recv(fd, &cmd) == -1)
-		err(1, "cmd_recv");
+	if (recv_cmd(fd, &cmd) == -1) {
+		log_warn("failed recv_cmd");
+		return;
+	}
 
 	log_debug("got command: %s", cmd_name(cmd.type));
 
@@ -180,11 +262,11 @@ handle_cmd(int fd, short events, void *d)
 	}
 
 	warnx("unknown command %d", cmd.type);
+	close(fd);
 
 end:
 	if (cmd.argv != 0)
 		free(cmd.argv[0]);
-	close(fd);
 }
 
 static void
@@ -218,6 +300,8 @@ main(int argc, char **argv)
 	port = 2103;
 	path = NULL;
 
+	signal(SIGPIPE, SIG_IGN);
+
 	while ((ch = getopt(argc, argv, "P:p:v")) != -1) {
 		switch (ch) {
 		case 'p':
@@ -237,6 +321,8 @@ main(int argc, char **argv)
 
 	/* XXX: temporary */
 	verbose = 3;
+
+	LIST_INIT(&clients);
 
 	if (path == NULL)
 		path = default_socket_path();

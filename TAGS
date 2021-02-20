@@ -1,50 +1,62 @@
 
-cmd.c,53
-cmd_send(25,910
-cmd_recv(48,1341
-cmd_name(87,1995
+can.c,21
+conn_towards(30,959
 
-hiroctl.c,523
+cmd.c,53
+send_cmd(25,910
+recv_cmd(48,1341
+cmd_name(89,2018
+
+hiroctl.c,527
 #define dead_attr 31,1007
 void		 cmd_restart_usage(34,1088
-typedef int(*cmdmainfn)cmdmainfn45,1334
-struct cmddef 47,1373
-	const char	*cmd;cmd48,1389
-	cmdmainfn	 fn;49,1407
-} cmds[cmds50,1423
-const char *sockpath;sockpath58,1552
-int fd;59,1574
-char *me;me62,1637
-usage(65,1660
-io_copy(72,1769
-cmd_restart(85,1931
-cmd_restart_usage(92,2019
-cmd_put(99,2105
-cmd_put_usage(106,2183
-cmd_get(113,2261
-cmd_get_usage(120,2339
-cmd_ping(127,2417
-cmd_ping_usage(146,2660
-open_ctl_sock(153,2755
-main(172,3117
+typedef int(*cmdmainfn)cmdmainfn45,1338
+struct cmddef 47,1377
+	const char	*cmd;cmd48,1393
+	cmdmainfn	 fn;49,1411
+} cmds[cmds50,1427
+const char *sockpath;sockpath58,1560
+int fd;59,1582
+char *me;me62,1645
+usage(65,1668
+io_copy(72,1777
+cmd_restart(85,1939
+cmd_restart_usage(92,2027
+cmd_send(99,2115
+cmd_send_usage(126,2472
+cmd_recv(133,2566
+cmd_recv_usage(160,2974
+cmd_ping(167,3056
+cmd_ping_usage(185,3273
+open_ctl_sock(192,3368
+main(211,3730
 
-hirod.c,410
-typedef void (*cmd_handlefn)cmd_handlefn37,1122
-struct cmd_handlers 44,1361
-	enum cmd_type	type;45,1383
-	cmd_handlefn	fn;46,1404
-} handlers[handlers47,1422
-handle_cmd_restart(56,1602
-handle_cmd_put(62,1707
-handle_cmd_get(68,1804
-handle_cmd_ping(74,1901
-usage(80,1983
-make_socket(87,2088
-make_ctl_socket(142,3200
-handle_cmd(165,3621
-handle_ctl_conn(191,4046
-handle_conn(205,4299
-main(212,4402
+hirod.c,631
+typedef void (*cmd_handlefn)cmd_handlefn39,1149
+struct cmd_handlers 46,1390
+	enum cmd_type	type;47,1412
+	cmd_handlefn	fn;48,1433
+} handlers[handlers49,1451
+LIST_HEAD(57,1623
+struct client 58,1663
+	int			 fd;59,1679
+	int			 busy;60,1691
+	size_t			 off;61,1705
+	size_t			 len;62,1721
+	struct shstr		*buf;buf63,1737
+	struct event		 ev;65,1785
+	LIST_ENTRY(66,1805
+handle_cmd_restart(95,2287
+handle_cmd_send(102,2404
+handle_cmd_recv(138,3072
+handle_cmd_ping(153,3321
+usage(160,3415
+make_socket(167,3520
+make_ctl_socket(222,4632
+handle_cmd(245,5053
+handle_ctl_conn(273,5502
+handle_conn(287,5755
+main(294,5858
 
 log.c,135
 int verbose,27,940
@@ -52,15 +64,18 @@ int verbose, log_to_syslog;27,940
 should_log(30,987
 do_log(48,1248
 #define DEFLOGFN(70,1685
-log_fatal(93,2062
+log_fatal(89,2058
 
-util.c,225
-default_socket_path(25,897
-#define	INVALID	41,1122
-#define	TOOSMALL	42,1141
-#define	TOOLARGE	43,1160
-strtonum(46,1197
-	struct errval 52,1336
-		const char *errstr;errstr53,1353
-		int err;54,1375
-parse_portno(88,1990
+util.c,287
+default_socket_path(26,917
+#define	INVALID	42,1142
+#define	TOOSMALL	43,1161
+#define	TOOLARGE	44,1180
+strtonum(47,1217
+	struct errval 53,1356
+		const char *errstr;errstr54,1373
+		int err;55,1395
+parse_portno(89,2010
+make_shstr(101,2208
+shstr_inc(119,2440
+free_shstr(126,2498

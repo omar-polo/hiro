@@ -14,24 +14,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef HIRO_CMD_H
-#define HIRO_CMD_H
+#ifndef HIRO_CAN_H
+#define HIRO_CAN_H
 
-enum cmd_type {
-	CMD_RESTART,
-	CMD_SEND,
-	CMD_RECV,
-	CMD_PING,		/* testing */
+#include <compat/queue.h>
+
+struct node {
+	double		 x, y;
+	double		 h, w;
+	const char	*hostname;
+	const char	*portno;
 };
 
-struct cmd {
-	enum cmd_type	  type;
-	int		  argc;
-	char		**argv;
-};
-
-int		 send_cmd(int, struct cmd*);
-int		 recv_cmd(int, struct cmd*);
-const char	*cmd_name(enum cmd_type);
+int		 conn_towards(struct node*);
 
 #endif
