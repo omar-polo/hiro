@@ -12,7 +12,8 @@ compat = []
 cc = meson.get_compiler('c')
 
 functions = [['arc4random', ['compat/arc4random.c'], 'HAVE_ARC4RANDOM', 'arc4random.h'],
-             ['err', ['compat/err.c'], 'HAVE_ERR', 'err.h']]
+             ['err', ['compat/err.c'], 'HAVE_ERR', 'err.h'],
+             ['strtonum', ['compat/strtonum.c'], 'HAVE_STRTONUM', 'strtonum.h']]
 foreach f : functions
 	t = cc.has_function(f[0])
 	conf = configuration_data()
