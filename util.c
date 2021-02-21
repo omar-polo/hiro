@@ -16,7 +16,8 @@
 
 #include "util.h"
 
-#include <err.h>
+#include "err.h"
+
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>

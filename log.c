@@ -79,11 +79,11 @@ do_log(int priority, const char *fmt, va_list ap)
 		va_end(ap);		\
 	}
 
-DEFLOGFN(log_debug,	LOG_DEBUG);
-DEFLOGFN(log_info,	LOG_INFO);
-DEFLOGFN(log_notice,	LOG_NOTICE);
-DEFLOGFN(log_warn,	LOG_WARNING);
-DEFLOGFN(log_err,	LOG_ERR);
+DEFLOGFN(log_debug,	LOG_DEBUG)
+DEFLOGFN(log_info,	LOG_INFO)
+DEFLOGFN(log_notice,	LOG_NOTICE)
+DEFLOGFN(log_warn,	LOG_WARNING)
+DEFLOGFN(log_err,	LOG_ERR)
 
 void
 log_fatal(const char *fmt, ...)

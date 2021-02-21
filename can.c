@@ -17,6 +17,8 @@
 #include "can.h"
 #include "log.h"
 
+#include "arc4random.h"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -25,6 +27,13 @@
 #include <netdb.h>
 #include <string.h>
 #include <unistd.h>
+
+void
+random_point(uint64_t *a, uint64_t *b)
+{
+	arc4random_buf(a, sizeof(*a));
+	arc4random_buf(b, sizeof(*b));
+}
 
 int
 conn_towards(struct node *n)

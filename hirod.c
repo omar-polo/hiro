@@ -19,12 +19,14 @@
 #include "log.h"
 #include "util.h"
 
+#include "err.h"
+#include "queue.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include <err.h>
 #include <errno.h>
 #include <event.h>
 #include <fcntl.h>
@@ -33,8 +35,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include <compat/queue.h>
 
 typedef void (*cmd_handlefn)(int, struct cmd*);
 

@@ -17,15 +17,19 @@
 #ifndef HIRO_CAN_H
 #define HIRO_CAN_H
 
-#include <compat/queue.h>
+#include <stdint.h>
+
+#include "queue.h"
 
 struct node {
-	double		 x, y;
-	double		 h, w;
+	uint64_t	 x, y;
+	uint64_t	 h, w;
 	const char	*hostname;
 	const char	*portno;
+	LIST_ENTRY(node) node;
 };
 
+void		 random_point(uint64_t*, uint64_t*);
 int		 conn_towards(struct node*);
 
 #endif
