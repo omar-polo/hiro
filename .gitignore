@@ -1,4 +1,2 @@
-hirod
-hiroctl
-*.o
-compile_flags.txt
+build
+TAGS
