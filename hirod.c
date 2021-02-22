@@ -96,7 +96,7 @@ handle_client_write(int fd, short ev, void *d)
 static void
 handle_cmd_restart(int fd, struct cmd *cmd)
 {
-	warnx("unimplemented handle_cmd_restart");
+	dprintf(fd, "unimplemented handle_cmd_restart\n");
 	close(fd);
 }
 

@@ -84,7 +84,14 @@ io_copy(int from, int to)
 int
 cmd_restart(int argc, char **argv)
 {
-	printf("RESTART\n");
+	struct cmd cmd = {
+		.type = CMD_RESTART,
+	};
+
+	if (send_cmd(fd, &cmd) == -1)
+		err(1, "cmd_restart");
+
+	io_copy(fd, 1);
 	return 0;
 }
 
