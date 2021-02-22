@@ -4,7 +4,14 @@ project('hiro', 'c',
 
 add_global_arguments('-Wno-unused-parameter', language : 'c')
 
-event = dependency('libevent')
+if host_machine.system() == 'openbsd'
+	# event is in base
+	event = dependency('', required : false)
+	add_global_link_arguments('-levent', language : 'c')
+else
+	event = dependency('libevent')
+endif
+
 openssl = dependency('openssl')
 
 compat = []
